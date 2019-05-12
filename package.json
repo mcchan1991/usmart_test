@@ -1,0 +1,21 @@
+{
+  "name": "usmart",
+  "version": "1.0.0",
+  "description": "usmart technical task",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "mc.chan119",
+  "license": "ISC",
+  "dependencies": {
+    "angular": "^1.7.8",
+    "elasticsearch": "^16.0.0",
+    "express": "^4.16.4",
+    "express-handlebars": "^3.0.2",
+    "handlebars": "^4.1.2",
+    "jquery": "^3.4.1",
+    "websocket": "^1.0.28",
+    "ws": "^7.0.0"
+  }
+}
