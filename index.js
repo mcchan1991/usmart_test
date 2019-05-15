@@ -2,23 +2,41 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const test = require('./esInit.js');
 const hbs=require('express-handlebars');
 const elasticsearch = require('elasticsearch');
 const client = new elasticsearch.Client({
   hosts: [ 'http://elastic:changeme@elasticsearch:9200']
 });
-const WebSocket = require('ws');
-const ws = new WebSocket('wss://ws.blockchain.info/inv');
+
 // view engine setup
 app.engine('hbs', hbs({extname:'hbs', defaultLayout: 'layout', layoutsDir: __dirname+'/views/layouts/'}));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+test.esInit(client);
+
 //index
 app.get('/', function (req, res) {
   res.render('index');
 })
+
+
+app.get('/delete_all', function (req, res) {
+  client.indices.delete({
+    index: '_all'
+  }, function(err, res) {
+
+    if (err) {
+      console.error(err.message);
+    } else {
+      console.log('Indexes have been deleted!');
+    }
+  });
+})
+
 //api transaction get 8 recent transaction
 app.get('/api/tx', function (req, res) {
   client.search({
@@ -70,67 +88,6 @@ app.get('/api/block', function (req, res) {
     console.trace(err.message);
   });
 })
-
-client.ping({
-  requestTimeout: 30000,
-}, function(error) {
-  if (error) {
-    console.error('elasticsearch cluster is down!');
-  } else {
-    console.log('Everything is ok');
-  }
-});
-//create tx index
-client.indices.create({
-  index: 'tx'
-}, function(err, resp, status) {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("create", resp);
-  }
-});
-//create block index
-client.indices.create({
-  index: 'block'
-}, function(err, resp, status) {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("create", resp);
-  }
-});
-
-//Subscribing to Unconfirmed transactions
-//Subscribing to new Blocks
-ws.on('open', function open() {
-  ws.send('{"op":"unconfirmed_sub"}');
-  ws.send('{"op":"blocks_sub"}');
-});
-
-//insert message, and index transaction and block in elasticsearch
-ws.on('message', function incoming(data) {
-  let jsonData =JSON.parse(data);
-  if(jsonData.op==='utx'){
-    client.index({
-      index: 'tx',
-      id: jsonData.hash,
-      type: 'utx',
-      body: jsonData.x
-    }, function(err, resp, status) {
-      console.log(resp);
-    });
-  }else if(jsonData.op==='block'){
-    client.index({
-      index: 'block',
-      id: jsonData.x.hash,
-      type: 'block',
-      body: jsonData.x
-    }, function(err, resp, status) {
-      console.log(resp);
-    });
-  }
-});
 
 //Launch listening server on port 8081
 app.listen(8081, function () {
