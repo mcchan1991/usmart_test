@@ -62,7 +62,7 @@ const wsInit= (client) =>{
     };
 }
 
-exports.esInit = (client) => {
+exports.start = (client) => {
     const esInterval =setInterval(function() {
         client.ping({
             requestTimeout: 30000,

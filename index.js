@@ -2,7 +2,7 @@
 const express = require('express');
 const app = express();
 const path = require('path');
-const test = require('./esInit.js');
+const esInit = require('./esInit.js');
 const hbs=require('express-handlebars');
 const elasticsearch = require('elasticsearch');
 const client = new elasticsearch.Client({
@@ -16,7 +16,7 @@ app.set('view engine', 'hbs');
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-test.esInit(client);
+esInit.start(client);
 
 //index
 app.get('/', function (req, res) {
